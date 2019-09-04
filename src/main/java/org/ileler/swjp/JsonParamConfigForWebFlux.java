@@ -1,6 +1,5 @@
 package org.ileler.swjp;
 
-import com.jayway.jsonpath.JsonPath;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ReactiveAdapterRegistry;
 import org.springframework.http.codec.ServerCodecConfigurer;
@@ -25,7 +24,6 @@ public class JsonParamConfigForWebFlux implements WebFluxConfigurer {
         configurer.addCustomResolver(new HandlerMethodArgumentResolverForFlux());
     }
 
-
     class HandlerMethodArgumentResolverForFlux extends AbstractMessageReaderArgumentResolver {
 
         private static final String JSONBODYATTRIBUTE = "JSON_REQUEST_BODY";
@@ -45,15 +43,16 @@ public class JsonParamConfigForWebFlux implements WebFluxConfigurer {
             return Mono.defer(() -> {
                 if (model.asMap().containsKey(JSONBODYATTRIBUTE)) {
                     return Mono.create(
-                            (callback -> ((Map<String, MonoSink<Object>>) model.asMap().get(JSONBODYATTRIBUTE)).put(jsonParamBean.getParamName(), callback))
-                    ).defaultIfEmpty(jsonParamBean.getParamDefaultValue());
+                            (callback -> ((Map<JsonParamBean, MonoSink<Object>>) model.asMap().get(JSONBODYATTRIBUTE)).put(jsonParamBean, callback))
+                    );
                 }
-                model.addAttribute(JSONBODYATTRIBUTE, new HashMap<String, MonoSink<Object>>());
+                model.addAttribute(JSONBODYATTRIBUTE, new HashMap<JsonParamBean, MonoSink<Object>>());
                 return readBody(methodParameter, false, bindingContext, serverWebExchange).map(json -> {
-                    ((Map<String, MonoSink<Object>>) model.asMap().get(JSONBODYATTRIBUTE)).forEach(
-                            (String paramName, MonoSink<Object> callback) -> callback.success(JsonPath.read((String) json, paramName)));
-                    return JsonPath.read((String) json, jsonParamBean.getParamName());
-                }).defaultIfEmpty(jsonParamBean.getParamDefaultValue());
+                    ((Map<JsonParamBean, MonoSink<Object>>) model.asMap().get(JSONBODYATTRIBUTE)).forEach(
+                            (JsonParamBean bean, MonoSink<Object> callback) -> callback.success(bean.getValue((String) json))
+                    );
+                    return jsonParamBean.getValue((String) json);
+                });
             });
         }
 

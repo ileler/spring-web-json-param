@@ -1,7 +1,6 @@
 package org.ileler.swjp;
 
 import com.google.common.io.ByteStreams;
-import com.jayway.jsonpath.JsonPath;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -33,13 +32,7 @@ public class JsonParamConfigForWebMvc extends WebMvcConfigurerAdapter {
         }
 
         public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
-            JsonParamBean jsonParamBean = JsonParamResolver.resolveArgument(methodParameter);
-            Object read = null;
-            try {
-                read = JsonPath.read(getRequestBody(nativeWebRequest), jsonParamBean.getParamName());
-            } catch (Exception e) {
-            }
-            return read == null ? jsonParamBean.getParamDefaultValue() : read;
+            return JsonParamResolver.resolveArgument(methodParameter).getValue(getRequestBody(nativeWebRequest));
         }
 
         private String getRequestBody(NativeWebRequest webRequest) {

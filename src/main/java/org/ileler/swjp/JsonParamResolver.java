@@ -30,7 +30,7 @@ public final class JsonParamResolver {
         if (StringUtils.isEmpty(value)) {
             value = parameter.getParameterName();
         }
-        return new JsonParamBean(value, parameterAnnotation.defaultValue());
+        return new JsonParamBean(value, parameterAnnotation.required(), parameterAnnotation.defaultValue(), parameter.getParameterType());
     }
 
 }
