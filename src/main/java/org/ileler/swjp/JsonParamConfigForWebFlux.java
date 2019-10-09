@@ -51,6 +51,7 @@ public class JsonParamConfigForWebFlux implements WebFluxConfigurer {
                     ((Map<JsonParamBean, MonoSink<Object>>) model.asMap().get(JSONBODYATTRIBUTE)).forEach(
                             (JsonParamBean bean, MonoSink<Object> callback) -> callback.success(bean.getValue((String) json))
                     );
+                    model.asMap().remove(JSONBODYATTRIBUTE);
                     return jsonParamBean.getValue((String) json);
                 });
             });
